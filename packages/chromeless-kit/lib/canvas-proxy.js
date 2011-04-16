@@ -62,3 +62,25 @@ exports.snapshot = function Snapshot(frame) {
   ctx.drawWindow(window, window.scrollX, window.scrollY, snippetWidth, snippetWidth * aspectRatio, "rgb(255,255,255)");
   return thumbnail.toDataURL("image/png");
 }
+
+exports.full_snapshot = function Snapshot(frame,thumbnail_width,thumbnail_height,console) {
+
+  var window = frame.contentWindow;
+  if(window){
+  var thumbnail = window.document.createElementNS(XHTML_NS, "canvas");
+  thumbnail.mozOpaque = true;
+  thumbnail.width = thumbnail_width ||  Math.ceil(window.screen.availWidth / 4.75);
+  var aspectRatio = 0.5625; // 16:9
+  thumbnail.height = thumbnail_height || Math.round(thumbnail.width * aspectRatio);
+  var ctx = thumbnail.getContext("2d");
+  var snippetWidth = window.innerWidth; 
+  //var snippetWidth=64;
+  //var scale = thumbnail.width / snippetWidth;
+  console.log(thumbnail.width)
+    console.log(thumbnail.height)
+ // console.log(scale)
+   // ctx.scale(scale, scale);
+  ctx.drawWindow(window, window.scrollX, window.scrollY, thumbnail.width, thumbnail.height, "rgb(255,255,255)");
+  return thumbnail.toDataURL("image/png");
+  }
+}
