@@ -1,0 +1,268 @@
+<!-- This webpage controls the top level rendering of the browser.  it's
+the first document that is loaded. and defines the look and feel of
+the browser.  --> 
+
+<html>
+  <head>
+    <!-- What if the title of the top level document dictated the os level
+    process/application name? -->
+    <title>Becker -</title>
+
+    <!-- we can use basic flexbox layout! -->
+    <style type="text/css" media="screen">
+
+      body {
+        background-color: #999;
+        padding: 0;
+        margin: 0;
+      }
+
+      #browserHeader {
+        width: 100%;
+      }
+
+
+      #browserHeader form { 
+        margin-bottom:5px;
+      } 
+      #awesomeBox {
+        font-size: 120%;
+        margin-right: 20px;
+        width: 60%;
+      }
+
+      .security_secure { 
+        -moz-transition-property: background-color;
+        -moz-transition-duration: 1s;
+        -moz-transition-delay: 0s;
+        background-color:lightblue;
+      }  
+      .security_insecure { 
+        -moz-transition-property: background-color;
+        -moz-transition-duration: 1s;
+        -moz-transition-delay: 0s;
+        background-color:yellow;
+      }  
+      .security_broken { 
+        -moz-transition-property: background-color;
+        -moz-transition-duration: 1s;
+        -moz-transition-delay: 0s;
+        background-color:red;
+      }  
+
+      #browserContentArea {
+        -moz-box-flex: 1;
+        -webkit-box-flex: 1;
+        box-flex: 1;
+        display: -moz-box;
+        display: -webkit-box;
+        display: box;
+        border: 1px solid green;
+        margin-top:0;
+      }
+
+
+      #outer {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        display: -moz-box;
+        display: -webkit-box;
+        display: box;
+        -moz-box-orient: vertical;
+        -webkit-box-orient: vertical;
+        box-orient: vertical;
+      }
+
+      .browser { 
+        border: 1px solid blue;
+        box-flex: 1;
+        -moz-box-flex: 1;
+        -webkit-box-flex: 1;
+        width: 100%;
+        height: 100%;
+      } 
+
+      .browser_selected { 
+        display:block;
+      } 
+
+      .browser_hidden { 
+        display:none;
+      } 
+
+      #thumbsNavigator { 
+        width: 69px;
+        height: 100%;
+        overflow: hidden;
+      } 
+
+      .thumb_img { 
+        -moz-transition-property: width,height;
+        -moz-transition-duration: .5s;
+        -moz-transition-delay: .5s;
+        width:64px;
+        height:64px;
+        margin: 1px;
+        opacity:.6;
+        margin-left:5px;;
+        overflow:hidden;
+      } 
+      .thumb_img .selected{
+        margin-right: 10px;
+      }
+      .thumb_img:hover { 
+        -moz-transition-property: width,height;
+        -moz-transition-duration: .5s;
+        -moz-transition-delay: 0s;
+        margin: 0px;
+        border: 1px solid yellow;
+      } 
+
+    </style>
+  </head>
+  <body>
+    <div id="outer">
+
+      <div id="browserHeader">
+        <form>
+          <input id="awesomeBox"  type="text" value="http://www.google.com" />
+          <input type="submit" id="buttonGo"  value="go"></input>
+          <button id="buttonNew" class="newTabButton">New</button>
+          <button id="buttonFull" >Full</button>
+        </form>
+      </div>
+      <div id="browserContentArea">
+        <!-- what if iframes were how the browser HTML embedded web content?
+        what if a new attribute were introduced which controlled priviledge
+        level of content loaded in an iframe? --> 
+        <div id="thunbs">
+        <div id="thumbsNavigator">
+        </div>
+        <div class="newTabButton">
+          New
+        </div>
+      </div>
+      </div>
+    </div>
+  </body>
+  <!-- Could the browser itself leverage a framework like YUI or jquery?
+  This shouldn't be that much different than slamming YUI into node.js
+  or jquery into jetpacks? -->
+  <script type="text/javascript" src="jquery-min.js"></script>
+  <script type="text/javascript">
+
+    const fullscreen  = require("fullscreen");
+    const url         = require("url");
+
+    var currentBrowser = null; 
+    var currSelected   = null; 
+    var browserTabs    = new Array();
+
+    function makeBrowser() { 
+      var browser = document.createElement("iframe");
+      $(browser).addClass("browser");
+      return browser;
+    } 
+
+function selectBrowser(browserRef) { 
+  $(".browser").removeClass("browser_selected");
+  $(".browser").addClass("browser_hidden");
+  $(browserRef).removeClass("browser_hidden");
+  $(browserRef).addClass("browser_selected");
+  var refBrowserId = $(browserRef).attr("id");
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+  if(currSelected) { 
+    document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
+  } 
+  document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
+  currSelected = uniqueId; 
+} 
+
+function canvasShot(browserRef, thumbImageRef) { 
+  try { 
+    var camera = require("canvas-proxy");
+    thumbImageRef.width="1";
+    thumbImageRef.height="1";
+    thumbImageRef.src=camera.snapshot(browserRef);
+  } catch (i) { 
+    console.log(i); 
+  } 
+} 
+
+function newTab() { 
+  var newBrowser = makeBrowser();
+  var uniqueId   = Math.random();
+  var browserUnique = "browser_unique_"+uniqueId;
+
+  browserTabs.push(newBrowser);
+  newBrowser.setAttribute("id",browserUnique);
+
+  // Update thumbnails of the iframe when DOM is setup, and
+  // again when the page is fully loaded.
+  newBrowser.addEventListener("ChromelessDOMSetup",function (e) { 
+      syncTabs(browserUnique);
+      },false);
+
+  // sync again after load is compelete
+  newBrowser.addEventListener("ChromelessLoadStop",function (e) { 
+      syncTabs(browserUnique);
+      },false);
+
+  newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
+      $("#awesomeBox").attr("class","security_"+e.state);
+      },false);
+
+  var thumb = document.createElement("span");
+  var img = document.createElement("img");
+  thumb.setAttribute("class","thumb");
+  img.setAttribute("class","thumb_img");
+  img.setAttribute("align","top");
+  img.width="60";
+  img.height="60";
+  img.setAttribute("onclick","selectBrowser(document.getElementById('browser_unique_"+uniqueId+"'))");
+  thumb.setAttribute("id","thumb_unique_"+uniqueId);
+  img.setAttribute("id","image_unique_"+uniqueId);
+  thumb.appendChild(img);
+  document.getElementById("thumbsNavigator").appendChild(thumb);
+  document.getElementById("browserContentArea").appendChild(newBrowser);
+  selectBrowser(newBrowser);
+  currentBrowser = newBrowser;
+} 
+
+function syncTabs(refBrowserId) { 
+  var uniqueId = refBrowserId.split("browser_unique_")[1];
+
+  canvasShot(document.getElementById(refBrowserId),document.getElementById("image_unique_"+uniqueId));
+}
+
+$(document).ready(function() {
+    $("#browserHeader form").submit(function(e) {
+      if(browserTabs.length<1) newTab();  
+      browserUniqueId = $(".browser_selected").attr("id");
+      var fragment = $.trim($("#awesomeBox").val());
+      $(".browser_selected").attr("src", url.guess(fragment));
+
+      return false; 
+      });
+    $(".newTabButton").click(function(e) {
+      newTab();
+      $("#awesomeBox").val("");
+      $("#awesomeBox").focus();
+      return false; 
+      });
+
+
+    $("#browserHeader #buttonPersist").click(function(e) {
+      $(".browser").removeClass("browser_hidden");
+      return false; 
+      });
+    $("#browserHeader #buttonFull").click(function(e) {
+      fullscreen.toggle(window);
+      return false; 
+      });
+});
+
+</script>
+</html>
+
