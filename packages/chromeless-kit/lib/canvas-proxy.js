@@ -76,8 +76,6 @@ exports.full_snapshot = function Snapshot(frame,thumbnail_width,thumbnail_height
   var snippetWidth = window.innerWidth; 
   //var snippetWidth=64;
   //var scale = thumbnail.width / snippetWidth;
-  console.log("fs"+thumbnail.width)
-    console.log("fs"+thumbnail.height)
  // console.log(scale)
    // ctx.scale(scale, scale);
   ctx.drawWindow(window, window.scrollX, window.scrollY, thumbnail.width, thumbnail.height, "rgb(255,255,255)");
