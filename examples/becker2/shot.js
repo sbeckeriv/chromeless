@@ -1,15 +1,7 @@
-
-
 const {Cc,Ci,Cu} = require("chrome");
-
 const fullscreen  = require("fullscreen");
 const url         = require("url");
 var camera = require("canvas-proxy");
-
-
-//fullscreen.toggle(window);
-
-var currentBrowser = null; 
 var currSelected   = null; 
 var browserTabs    = new Array();
 var shotQueue = new Array();
@@ -27,44 +19,28 @@ function selectBrowser(browserRef) {
   $(browserRef).addClass("browser_selected");
   var refBrowserId = $(browserRef).attr("id");
   var uniqueId = refBrowserId.split("browser_unique_")[1];
-  if(currSelected) { 
-    //document.getElementById("thumb_unique_"+currSelected).setAttribute("class","thumb");
-  } 
- // document.getElementById("thumb_unique_"+uniqueId).setAttribute("class","thumb thumb_selected");
   currSelected = uniqueId; 
 } 
 
 function canvasShot(browserRef, thumbImageRef) { 
   try { 
-  //  thumbImageRef.width="1";
-   // thumbImageRef.height="1";
-selectBrowser(browserRef)
-    console.log($(browserRef.contentWindow).width())
-    console.log($(browserRef.contentDocument).width())
-    console.log(browserRef.contentDocument.title)
-    console.log(browserRef.src)
-    // window.innerHeight=$(browserRef.contentDocument).height();
-    //  window.innerWidth= $(browserRef.contentDocument).width()+4; // shrinks 4 px each time
-
-
+    selectBrowser(browserRef);
     src=camera.full_snapshot(browserRef,$(browserRef.contentDocument).width(),$(browserRef.contentDocument).height(),console);
-    console.log(browserRef.src)
+    console.log("#######"+$(browserRef).attr("becksrc"));
 
-    //alert(browserRef.contentDocument.body.scrollHeight)
-    sendImage(browserRef.src,src);
+    sendImage($(browserRef).attr("becksrc"),src);
+    $(browserRef).remove();
+    console.log($("iframe").size())
   } catch (i) { 
+    console.log(i);
     console.log(i.message); 
     console.log(i.lineNumber); 
   } 
 } 
 
-
-
-
 function sendImage(url,data){
-  //  setTimeout(function(){
-  webSocket.send( "thunbnail||||"+url+"||||"+data);
-  //  },1)
+  console.log(window.ssid)
+    webSocket.send( window.ssid+"||||thunbnail||||"+url+"||||"+data);
 };
 
 function newTab() { 
@@ -74,18 +50,19 @@ function newTab() {
 
   browserTabs.push(newBrowser);
   newBrowser.setAttribute("id",browserUnique);
-
-  // Update thumbnails of the iframe when DOM is setup, and
-  // again when the page is fully loaded.
-  newBrowser.addEventListener("ChromelessDOMSetup",function (e) { 
-    //syncTabs(browserUnique);
-  },false);
-
-  // sync again after load is compelete
   newBrowser.addEventListener("ChromelessLoadProgress",function (e) { 
-    console.log(e.percentage)
-    if(e.percentage>90)
-    syncTabs(browserUnique);
+     try{
+      console.log("ChromelssLoad "+$(document.getElementById(browserUnique)).attr("becksrc")+" "+e.percentage)
+      }catch(e){
+
+      }
+
+    if(e.percentage>95){
+      syncTabs(browserUnique);
+      console.log("ChromelssLoad done")
+    }else{
+     
+    }
   },false);
 
   newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
@@ -93,15 +70,13 @@ function newTab() {
   },false);
 
   document.getElementById("browserContentArea").appendChild(newBrowser);
-  
   selectBrowser(newBrowser);
-  currentBrowser = newBrowser;
 } 
 
 function syncTabs(refBrowserId) { 
   var uniqueId = refBrowserId.split("browser_unique_")[1];
-
   canvasShot(document.getElementById(refBrowserId),document.getElementById("image_unique_"+uniqueId));
+  console.log("syncTabs done")
 }
 
 $(document).ready(function() {
@@ -110,7 +85,6 @@ $(document).ready(function() {
     browserUniqueId = $(".browser_selected").attr("id");
     var fragment = $.trim($("#awesomeBox").val());
     $(".browser_selected").attr("src", url.guess(fragment));
-
     return false; 
   });
   $("#browserHeader #buttonNew").click(function(e) {
