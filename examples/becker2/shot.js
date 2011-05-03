@@ -1,7 +1,4 @@
-const {Cc,Ci,Cu} = require("chrome");
-const fullscreen  = require("fullscreen");
-const url         = require("url");
-var camera = require("canvas-proxy");
+
 var currSelected   = null; 
 var browserTabs    = new Array();
 var shotQueue = new Array();
@@ -51,25 +48,22 @@ function newTab() {
   browserTabs.push(newBrowser);
   newBrowser.setAttribute("id",browserUnique);
   newBrowser.addEventListener("ChromelessLoadProgress",function (e) { 
-     try{
+    try{
       console.log("ChromelssLoad "+$(document.getElementById(browserUnique)).attr("becksrc")+" "+e.percentage)
-      }catch(e){
-
-      }
+    }catch(e){
+      console.log("error:Chromeprogress:"+e)
+    }
 
     if(e.percentage>95){
       syncTabs(browserUnique);
       console.log("ChromelssLoad done")
     }else{
-     
+
     }
   },false);
-
-  newBrowser.addEventListener("ChromelessSecurityChange", function (e) {
-    $("#awesomeBox").attr("class","security_"+e.state);
-  },false);
-
-  document.getElementById("browserContentArea").appendChild(newBrowser);
+  console.log(browserUnique)
+  console.log($("iframe").size())
+    document.getElementById("browserContentArea").appendChild(newBrowser);
   selectBrowser(newBrowser);
 } 
 
@@ -102,4 +96,41 @@ $(document).ready(function() {
     return false; 
   });
 });
+var watcher = setInterval(function(){
+  console.log($("iframe").size())
+  webSocket.send( window.ssid+"||||ping");
+
+},2000)
+
+
+var webSocket = new WebSocket("ws://0.0.0.0:8080");
+webSocket.onopen = function(evt) {
+};
+webSocket.onmessage = function(evt) {
+  var message =evt.data;
+  console.log("%%%%%%%"+message)
+    if(message.match(/beck:/)){
+      window.newTab();
+      browserUniqueId = $(".browser_selected").attr("id");
+      var fragment = $.trim(message.replace("beck:",""));
+      $(".browser_selected").attr("src", url.guess(fragment));
+      $(".browser_selected").attr("becksrc", fragment);
+
+
+    }else if(message.match(/ssid:/)){
+      console.log("__________sid"+message)
+
+
+        window.ssid= $.trim(message.replace("ssid:",""));
+    }else{
+      //alert(message);
+    }
+
+};
+webSocket.onclose = function(evt) {
+  console.log(evt)
+    webSocket = new WebSocket("ws://0.0.0.0:8080");
+
+};
+
 

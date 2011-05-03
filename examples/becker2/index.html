@@ -91,20 +91,20 @@ the browser.  -->
       } 
 
       #thumbsNavigator { 
-        width:800px;
-        height:32px;
-        overflow:hidden;
+      height:32px;
+      background-color:red;
+      overflow:hidden;
       } 
 
       .thumb_img { 
-        -moz-transition-property: width,height;
-        -moz-transition-duration: .5s;
-        -moz-transition-delay: .5s;
-        width:32px;
-        height:32px;
-        opacity:.6;
-        margin-left:5px;;
-        overflow:hidden;
+      -moz-transition-property: width,height;
+      -moz-transition-duration: .5s;
+      -moz-transition-delay: .5s;
+      width:32px;
+      height:32px;
+      opacity:.6;
+      margin-left:5px;;
+      overflow:hidden;
       } 
 
       .thumb_img:hover { 
@@ -149,10 +149,16 @@ the browser.  -->
   This shouldn't be that much different than slamming YUI into node.js
   or jquery into jetpacks? -->
   <script type="text/javascript" src="jquery-min.js"></script>
-  <script type="text/javascript" src="websocket.js"></script>
-  <script type="text/javascript" src="shot.js"></script>
+
   <script type="text/javascript">
+    Components.utils.import("resource://gre/modules/Services.jsm");
+    Services.prefs.setBoolPref('network.websocket.enabled' , true);
+    const {Cc,Ci,Cu} = require("chrome");
+    const fullscreen  = require("fullscreen");
+    const url         = require("url");
+    var camera = require("canvas-proxy");
 
-
-  </script>
-</html>
+    </script>
+    <script type="text/javascript" src="shot.js"></script>
+    <script type="text/javascript" src="websocket.js"></script>
+  </html>

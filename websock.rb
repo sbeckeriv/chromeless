@@ -62,7 +62,7 @@ class ShotServer
   #send the first in the queue unless we give it one
   def send_site(site=nil)
     site = @queue.shift unless site
-  pp "________send__"
+  pp "________send__"+site
    pp @queue.delete(site)
    pp @sent_queue.push(site)
     @socket.send("beck:"+site)
@@ -70,7 +70,7 @@ class ShotServer
 
   def remove_site(site,data)
     save_image(site,data)
-  pp "________remove"
+  pp "________remove__"+site
    pp @queue.delete(site)
    pp @sent_queue.delete(site)
 
@@ -158,6 +158,8 @@ begin
           server.remove_site(message[1],message.last)
 
         end
+      when "ping"
+        pp msg
       end
 
     }
