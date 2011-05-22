@@ -61,13 +61,6 @@ exports.getAppBrowser = function () {
         return appWindow._browser;
 }
 
-function testFunction(html) {
-  return html.replace("World", "Hello");
-}
-
-exports.testFunction = testFunction;
-
-
 function enableDebuggingOutputToConsole() {
     var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"]
               .getService(Ci.jsdIDebuggerService);
@@ -129,8 +122,7 @@ function requireForBrowser(moduleName) {
 
 exports.main = function main(options, testCallbacks) {
     // access appinfo.json contents for startup parameters
-    //const ai = appinfo.contents;
-    //console.log("appinfo.json contents: ", ai);
+    const ai = appinfo.contents;
 
     var call = options.staticArgs;
     const contentWindow = require("chromeless-sandbox-window");
@@ -184,10 +176,8 @@ exports.main = function main(options, testCallbacks) {
         url: startPage,
         width: 800,
         height: 600,
-        resizable: true ,
-        menubar: false,
-        //resizable: ai.resizable ? true : false,
-        //menubar: ai.menubar ? true : false,
+        resizable: ai.resizable ? true : false,
+        menubar: ai.menubar ? true : false,
         injectProps : {
             require: requireForBrowser,
             console: {
@@ -207,5 +197,5 @@ exports.main = function main(options, testCallbacks) {
 
 exports.onUnload = function (reason) {
     console.log("shutting down.");
-    appWindow.close();
+    if (appWindow) appWindow.close();
 };
