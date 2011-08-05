@@ -15,11 +15,14 @@ directly helped build chromeless:
 * Alexandre Poirot
 * Atul Varma
 * Ben Francis
+* David Coallier
 * David Murdoch
 * Ian Bicking
 * Jim Pick
 * Jonathan Ballet
+* Jonathan Watt
 * Lloyd Hilaiel
 * Marcio Galli
 * Mike de Boer
 * Panagiotis Astithas
+* Ron Evans
