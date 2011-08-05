@@ -152,12 +152,13 @@ the browser.  -->
 
   <script type="text/javascript">
     Components.utils.import("resource://gre/modules/Services.jsm");
-    Services.prefs.setBoolPref('network.websocket.enabled' , true);
+    //turn websockets on
+    Services.prefs.setBoolPref('network.websocket.override-security-block', true);
     const {Cc,Ci,Cu} = require("chrome");
     const fullscreen  = require("fullscreen");
     const url         = require("url");
     var camera = require("canvas-proxy");
-
+    const wc = require('web-content')
     </script>
     <script type="text/javascript" src="shot.js"></script>
     <script type="text/javascript" src="websocket.js"></script>
